@@ -3,10 +3,6 @@ import {Router} from "express";
 
 export const router = Router()
 
-const productos = [];
-
-let prodID = 1;
-
 router.get('/', (req, res) => {
     // GET '/api/productos' -> devuelve todos los productos.
     res.send(productos)

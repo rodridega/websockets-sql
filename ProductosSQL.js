@@ -6,18 +6,26 @@ class ProductosSQL {
   }
 
   createTable() {
-    return this.knex.schema.dropTableIfExists("productos").finally(() => {
-      return (
-        this.knex.schema.createTable("productos"),
-        (table) => {
+    
+        this.knex.schema.createTable("productos", (table) => {
           table.increments("id").primary();
           table.string("nombre", 50).notNullable();
           table.float("precio").notNullable();
-          table.string("urlImagen").notNullable();
-        }
-      );
-    });
+          table.string("imagenUrl").notNullable();
+        })
+    
   }
+  insertar(data) {
+    return this.knex("productos").insert(data)
+  }
+  consultar(){
+    return this.knex("productos").select("*")
+  }
+  borrarTodo(){
+    return this.knex("productos").del("*")
+  }
+
+
 }
 
 export default ProductosSQL;

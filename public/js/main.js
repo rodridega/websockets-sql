@@ -9,7 +9,7 @@ btnGuardar?.addEventListener("click", () => {
   const data = {
     nombre: document.getElementById("nombre").value,
     precio: document.getElementById("precio").value,
-    urlImagen: document.getElementById("urlImagen").value,
+    imagenUrl: document.getElementById("urlImagen").value,
   };
 
   document.getElementById("productsForm").reset();
@@ -23,7 +23,7 @@ socket.on("todosLosProductos", (productos) => {
     <tr> 
       <td>${producto.nombre}</td>
       <td>$ ${producto.precio}</td>
-      <td><img src="${producto.urlImagen}" height="30px"></td>
+      <td><img src="${producto.imagenUrl}" height="30px"></td>
     </tr>
     `;
   });

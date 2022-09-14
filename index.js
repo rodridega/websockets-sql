@@ -18,20 +18,6 @@ const messages = [];
 
 //HANDLEBARS
 import { engine } from "express-handlebars";
-import ProductosSQL from "./ProductosSQL.js";
-
-
-const options ={
-  client: "mysql",
-  connection:{
-      host: 'localhost',
-      user: 'root',
-      password: '',
-      database: 'deganutti'
-  }
-}
-const prodSql = new ProductosSQL(options)
-
 app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 app.set("views", "./src/Handlebars/views");
@@ -42,30 +28,56 @@ app.get("/", (req, res) => {
 
 app.use("/api/productos", router);
 
+import ProductosSQL from "./ProductosSQL.js";
+import options from "./src/database/config.js";
+import { saveProduct } from "./src/utils/saveProduct.js";
+import ChatSQL from "./src/database/chatDb.js";
+import optionsChat from "./src/options/sqlite3.js";
+
+const prodSql = new ProductosSQL(options)
+const chatSql = new ChatSQL(optionsChat)
+
+
 io.on("connection", async (socket) => {
   console.log("a user connected");
 
+  let productos = await prodSql.consultar()
 
-  prodSql.createTable().then((data)=>{
-    console.log(data);
-  })
+  if (productos === []) {
+    return prodSql.createTable().then((data) => {
+      console.log("Tabla Productos creada");
+      prodSql.consultar().then((data) => {
+        socket.emit("todosLosProductos", data);
+      })
+    })
+  }
+
+  socket.emit("todosLosProductos", productos);
+
+  const chatINFO = await chatSql.consultar()
+  if (chatINFO === []) {
+    await chatSql.createTable() 
+  }
+  
+  console.log(chatINFO);
+  socket.emit("todosLosMensajes", chatINFO);
+
+  socket.on("productoGuardado", async (data) => {
+    await saveProduct(data).then((data) => {
+      prodSql.consultar().then((productos) => {
+        console.log("Consultando todos los productos");
+        io.sockets.emit("todosLosProductos", productos);
+      })
+    })
 
 
-/*   socket.emit("todosLosProductos", productos);
- */
-/*   const chatINFO = await readChat();
- */
-/*   socket.emit("todosLosMensajes", chatINFO);
- */
-  /* socket.on("productoGuardado", async (data) => {
-    await saveProduct(data);
-    io.sockets.emit("todosLosProductos", productos);
-  }); */
+  });
 
-  /* socket.on("nuevoMensaje", async (data) => {
-    await insertChat(data);
-    io.sockets.emit("todosLosMensajes", await readChat());
-  }); */
+  socket.on("nuevoMensaje", async (data) => {
+    await chatSql.insertar(data)
+    const chatINFO = await chatSql.consultar()
+    io.sockets.emit("todosLosMensajes", chatINFO);
+  });
 });
 
 const PORT = process.env.PORT || 8080;
