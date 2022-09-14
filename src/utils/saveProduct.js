@@ -1,5 +1,5 @@
-import ProductosSQL from "../../ProductosSQL.js";
-import options from "../database/config.js";
+import ProductosSQL from "../database/ProductosSQL.js";
+import options from "../options/mariaDb.js";
 
 
 const prodSql = new ProductosSQL(options)

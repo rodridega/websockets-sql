@@ -6,22 +6,25 @@ class ProductosSQL {
   }
 
   createTable() {
-    
-        this.knex.schema.createTable("productos", (table) => {
+    return this.knex.schema.hasTable('productos').then((exists) => {
+      if (!exists) {
+        return this.knex.schema.createTable("productos", (table) => {
           table.increments("id").primary();
           table.string("nombre", 50).notNullable();
           table.float("precio").notNullable();
           table.string("imagenUrl").notNullable();
         })
-    
+      }
+    });
+
   }
   insertar(data) {
     return this.knex("productos").insert(data)
   }
-  consultar(){
+  consultar() {
     return this.knex("productos").select("*")
   }
-  borrarTodo(){
+  borrarTodo() {
     return this.knex("productos").del("*")
   }
 
@@ -29,3 +32,5 @@ class ProductosSQL {
 }
 
 export default ProductosSQL;
+
+

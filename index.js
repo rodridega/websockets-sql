@@ -2,6 +2,13 @@ import express from "express";
 import { Server as HttpServer } from "http";
 import { Server as IOServer } from "socket.io";
 import { router } from "./src/router/routes.js";
+import { engine } from "express-handlebars";
+import ProductosSQL from "./src/database/ProductosSQL.js";
+import options from "./src/options/mariaDb.js";
+import { saveProduct } from "./src/utils/saveProduct.js";
+import ChatSQL from "./src/database/chatDb.js";
+import optionsChat from "./src/options/sqlite3.js";
+
 
 const app = express();
 
@@ -17,7 +24,7 @@ const io = new IOServer(httpServer);
 const messages = [];
 
 //HANDLEBARS
-import { engine } from "express-handlebars";
+
 app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 app.set("views", "./src/Handlebars/views");
@@ -28,11 +35,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/productos", router);
 
-import ProductosSQL from "./ProductosSQL.js";
-import options from "./src/database/config.js";
-import { saveProduct } from "./src/utils/saveProduct.js";
-import ChatSQL from "./src/database/chatDb.js";
-import optionsChat from "./src/options/sqlite3.js";
 
 const prodSql = new ProductosSQL(options)
 const chatSql = new ChatSQL(optionsChat)
@@ -41,24 +43,22 @@ const chatSql = new ChatSQL(optionsChat)
 io.on("connection", async (socket) => {
   console.log("a user connected");
 
-  let productos = await prodSql.consultar()
 
-  if (productos === []) {
-    return prodSql.createTable().then((data) => {
-      console.log("Tabla Productos creada");
-      prodSql.consultar().then((data) => {
-        socket.emit("todosLosProductos", data);
-      })
+  prodSql.createTable().then((data) => {
+    console.log("Tabla Productos creada");
+    prodSql.consultar().then((data) => {
+      socket.emit("todosLosProductos", data);
     })
-  }
+  })
 
-  socket.emit("todosLosProductos", productos);
 
+  /*   socket.emit("todosLosProductos", productos);
+   */
   const chatINFO = await chatSql.consultar()
   if (chatINFO === []) {
-    await chatSql.createTable() 
+    await chatSql.createTable()
   }
-  
+
   console.log(chatINFO);
   socket.emit("todosLosMensajes", chatINFO);
 

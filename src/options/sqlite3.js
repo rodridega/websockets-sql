@@ -2,7 +2,7 @@
 const optionsChat = {
     client: 'sqlite3',
     connection: {
-        filename: "src/database/chat.sqlite"
+        filename: "src/database/ecommerce.sqlite"
     },
     useNullAsDefault: true
 

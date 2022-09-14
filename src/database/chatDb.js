@@ -6,11 +6,15 @@ class ChatSQL {
     }
 
     createTable() {
-        return this.knex.schema.createTable("mensajes", (table) => {
-            table.increments("id").primary();
-            table.string("email", 50).notNullable();
-            table.string("fecha").notNullable();
-            table.string("mensaje").notNullable();
+        return this.knex.schema.hasTable('productos').then((exists) => {
+            if (!exists) {
+                return this.knex.schema.createTable("mensajes", (table) => {
+                    table.increments("id").primary();
+                    table.string("email", 50).notNullable();
+                    table.string("fecha").notNullable();
+                    table.string("mensaje").notNullable();
+                })
+            }
         })
 
     }
